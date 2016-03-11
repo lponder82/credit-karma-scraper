@@ -15,6 +15,12 @@ from bs4 import BeautifulSoup
 
 
 def _login_form_data(response):
+    """
+    Parses out the login form inputs needed for the post request body.
+
+    :param response: response object which contains the form element.
+    :return: dict containing input name:value
+    """
     soup = BeautifulSoup(response.content, 'html.parser')
     form = soup.find('form', {'id': 'logonform'})
     inputs = {field.get('name'): field.get('value') for field in form.find_all('input') if field.has_attr('name') and field.has_attr('value')}
