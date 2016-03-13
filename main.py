@@ -53,11 +53,13 @@ def login(session, username, password):
     :param password: creditkarma.com password
     :return:
     """
+    print 'fetching index...'
     login_page = session.get('https://www.creditkarma.com')  # get any necessary cookies
-
+    
     # Get the login form modal.
+    print 'fetching login form...'
     login_form_response = session.get('https://www.creditkarma.com/auth/logon?modal=1&interstitial=1')
-
+    
     payload = _login_form_data(login_form_response)
     payload.update({'username': username, 'password': password})
     payload = urllib.urlencode(payload)
@@ -67,11 +69,16 @@ def login(session, username, password):
     headers = {
         'Content-Type': 'application/x-www-form-urlencoded'
     }
-
+    
+    # Post login
+    print 'logging in...'
     _validator = session.post(url, data=payload, headers=headers)
     errs = _has_errors(_validator)
     if errs:
         raise ValueError(errs)
+    
+    # Fetch dashboard
+    print 'fetching information...'
     return session.get('https://www.creditkarma.com/dashboard')
 
 
