@@ -13,6 +13,8 @@ import argparse
 
 from bs4 import BeautifulSoup
 
+from parsers import ScoreBoard
+
 
 def _login_form_data(response):
     """
@@ -89,22 +91,17 @@ def parse_scores(response):
     :return:
     """
     soup = BeautifulSoup(response.content, 'html.parser')
-    scores = soup.find_all('span', {'class': 'score-block'})
     data = dict(
         scores=dict(),
         last_update=''
     )
-    for score in scores:
-        score_hyperlink = score.a.get('href')
-        score_value = int(score.find('span', {'class': 'score-value'}).text.strip())
-        score_category = score.find('span', {'class': 'score-rating'}).text.strip()
-        for bureau in ['transunion', 'equifax']:
-            if bureau in score_hyperlink:
-                data['scores'][bureau] = dict(
-                    href=score_hyperlink,
-                    value=score_value,
-                    category=score_category
-                )
+    score_parsers = ScoreBoard.from_soup(soup)
+    for score in score_parsers:
+        data['scores'][score.bureau_name] = dict(
+            href=score.hyperlink,
+            value=score.score,
+            category=score.category
+        )
     dates = soup.find('div', {'class': 'user-score-dates'})
     dates = ' - '.join((x.text.strip() for x in dates.find_all('span')))
     data['last_update'] = dates
